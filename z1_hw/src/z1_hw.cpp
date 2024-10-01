@@ -10,6 +10,8 @@ Z1HW::Z1HW(ros::NodeHandle& nh)
   int sdk_own_port, controller_port;
   nh.param<int>("udp/port_to_sdk", controller_port, 8872);
   nh.param<int>("udp_to_controller/own_port", sdk_own_port, 8872);
+  std::string prefix;
+  nh.param<std::string>("prefix", prefix, "");
 
   int njoints = has_gripper ? 7 : 6;
   pos = new double[njoints];
@@ -21,43 +23,43 @@ Z1HW::Z1HW(ros::NodeHandle& nh)
   this->init();
 
   /* Define hardware interface */
-  hardware_interface::JointStateHandle state_handle_1("joint1", &pos[0], &vel[0], &eff[0]);
+  hardware_interface::JointStateHandle state_handle_1(prefix + "joint1", &pos[0], &vel[0], &eff[0]);
   jnt_state_interface.registerHandle(state_handle_1);
-  hardware_interface::JointStateHandle state_handle_2("joint2", &pos[1], &vel[1], &eff[1]);
+  hardware_interface::JointStateHandle state_handle_2(prefix + "joint2", &pos[1], &vel[1], &eff[1]);
   jnt_state_interface.registerHandle(state_handle_2);
-  hardware_interface::JointStateHandle state_handle_3("joint3", &pos[2], &vel[2], &eff[2]);
+  hardware_interface::JointStateHandle state_handle_3(prefix + "joint3", &pos[2], &vel[2], &eff[2]);
   jnt_state_interface.registerHandle(state_handle_3);
-  hardware_interface::JointStateHandle state_handle_4("joint4", &pos[3], &vel[3], &eff[3]);
+  hardware_interface::JointStateHandle state_handle_4(prefix + "joint4", &pos[3], &vel[3], &eff[3]);
   jnt_state_interface.registerHandle(state_handle_4);
-  hardware_interface::JointStateHandle state_handle_5("joint5", &pos[4], &vel[4], &eff[4]);
+  hardware_interface::JointStateHandle state_handle_5(prefix + "joint5", &pos[4], &vel[4], &eff[4]);
   jnt_state_interface.registerHandle(state_handle_5);
-  hardware_interface::JointStateHandle state_handle_6("joint6", &pos[5], &vel[5], &eff[5]);
+  hardware_interface::JointStateHandle state_handle_6(prefix + "joint6", &pos[5], &vel[5], &eff[5]);
   jnt_state_interface.registerHandle(state_handle_6);
+
   if(has_gripper) {
-    hardware_interface::JointStateHandle state_handle_g("jointGripper", &pos[6], &vel[6], &eff[6]);
+    hardware_interface::JointStateHandle state_handle_g(prefix + "jointGripper", &pos[6], &vel[6], &eff[6]);
     jnt_state_interface.registerHandle(state_handle_g);
   }
-  
+
   registerInterface(&jnt_state_interface);
 
-  hardware_interface::JointHandle pos_handle_1(jnt_state_interface.getHandle("joint1"), &cmd[0]);
+  hardware_interface::JointHandle pos_handle_1(jnt_state_interface.getHandle(prefix + "joint1"), &cmd[0]);
   arm_pos_interface.registerHandle(pos_handle_1);
-  hardware_interface::JointHandle pos_handle_2(jnt_state_interface.getHandle("joint2"), &cmd[1]);
+  hardware_interface::JointHandle pos_handle_2(jnt_state_interface.getHandle(prefix + "joint2"), &cmd[1]);
   arm_pos_interface.registerHandle(pos_handle_2);
-  hardware_interface::JointHandle pos_handle_3(jnt_state_interface.getHandle("joint3"), &cmd[2]);
+  hardware_interface::JointHandle pos_handle_3(jnt_state_interface.getHandle(prefix + "joint3"), &cmd[2]);
   arm_pos_interface.registerHandle(pos_handle_3);
-  hardware_interface::JointHandle pos_handle_4(jnt_state_interface.getHandle("joint4"), &cmd[3]);
+  hardware_interface::JointHandle pos_handle_4(jnt_state_interface.getHandle(prefix + "joint4"), &cmd[3]);
   arm_pos_interface.registerHandle(pos_handle_4);
-  hardware_interface::JointHandle pos_handle_5(jnt_state_interface.getHandle("joint5"), &cmd[4]);
+  hardware_interface::JointHandle pos_handle_5(jnt_state_interface.getHandle(prefix + "joint5"), &cmd[4]);
   arm_pos_interface.registerHandle(pos_handle_5);
-  hardware_interface::JointHandle pos_handle_6(jnt_state_interface.getHandle("joint6"), &cmd[5]);
+  hardware_interface::JointHandle pos_handle_6(jnt_state_interface.getHandle(prefix + "joint6"), &cmd[5]);
   arm_pos_interface.registerHandle(pos_handle_6);
 
   registerInterface(&arm_pos_interface);
-  
 
   /* Set UnitreeArm SDK Class */
-  gripper_as = new actionlib::SimpleActionServer<control_msgs::GripperCommandAction>("z1_gripper", boost::bind(&Z1HW::gripperCB, this, _1), false);
+  gripper_as = new actionlib::SimpleActionServer<control_msgs::GripperCommandAction>(prefix + "z1_gripper", boost::bind(&Z1HW::gripperCB, this, _1), false);
   gripper_as->start();
 }
 
